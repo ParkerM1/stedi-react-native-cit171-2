@@ -1,3 +1,4 @@
+import { useLinkProps } from "@react-navigation/native";
 import {useState} from "react";
 import { SafeAreaView, StyleSheet, TextInput, TouchableOpacity, Text} from "react-native";
 import { ImageBackground } from "react-native-web";
@@ -9,27 +10,31 @@ const sendText = async (phoneNumber) => {
       'Content-Type': 'application/text'
     }
   });
-  const loginResponseText = await loginResponse.text();
-  console.log("login Response",loginResponseText);
+  // const loginResponseText = await loginResponse.text();
+  // console.log("login Response",loginResponseText);
 }
 
 
-const getToken = async({phoneNumber,otp}) =>{
-  const loginResponse = await fetch("https://dev.stedi.me/twofactorlogin/"+phoneNumber, {
+const getToken = async({phoneNumber, otp, setUserLoggedIn}) =>{
+  const tokenResponse = await fetch('https://dev.stedi.me/twofactorlogin', {
     method: "Post",
+    body:JSON.stringify({otp, phoneNumber}),
     headers: {
       'Content-Type': 'application/text'
     },
-    body:{
-    phoneNumber,
-    otp
-    }
+    // body:{
+    // phoneNumber,
+    // otp
+    // }
   });
-  const token = await loginResponse.text();
-  console.log(token);
+  const responseCode = tokenResponse.status;
+  if (responseCode==200){
+    setUserLoggedIn(true);
+  }
+  const tokenResponseString = await tokenResponse.text;
 }
 
-const Login = () => {
+const Login = (props) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState(null);
 
@@ -57,7 +62,9 @@ const Login = () => {
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
-        onPress={()=>{getToken(phoneNumber,otp)}}
+        onPress={()=>{
+          getToken({phoneNumber, otp, setUserLoggedIn:props.setUserLoggedIn});
+        }}
       >
         <Text>log in</Text>
       </TouchableOpacity>
